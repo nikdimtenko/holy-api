@@ -5,8 +5,14 @@ import { AppModule } from './../src/app.module';
 import { CreateReviewDto } from '../src/review/dto/create-review.dto';
 import { disconnect, Types } from 'mongoose';
 import { REVIEW_NOT_FOUND } from '../src/review/review.constants';
+import { AuthDto } from '../src/auth/dto/auth.dto';
 
 const productId = new Types.ObjectId().toHexString();
+
+const loginDto: AuthDto = {
+  login: 'create-delete-test@test.com',
+  password: '111111',
+};
 
 const testDto: CreateReviewDto = {
   name: 'Test',
@@ -19,6 +25,7 @@ const testDto: CreateReviewDto = {
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let createdId: string;
+  let token: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,6 +34,28 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    await request(app.getHttpServer()).post('/auth/register').send(loginDto);
+
+    const { body } = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send(loginDto);
+
+    token = body.access_token;
+  });
+
+  afterEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+
+    await request(app.getHttpServer())
+      .delete('/auth/deleteUser')
+      .set('Authorization', `Bearer ${token}`)
+      .send(loginDto);
   });
 
   it('/review/create (POST) - success', async (done) => {
@@ -71,12 +100,14 @@ describe('AppController (e2e)', () => {
   it('/review/create (DELETE) - success', () => {
     return request(app.getHttpServer())
       .delete('/review/' + createdId)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
   });
 
   it('/review/create (DELETE) - fail', () => {
     return request(app.getHttpServer())
       .delete('/review/' + new Types.ObjectId().toHexString())
+      .set('Authorization', `Bearer ${token}`)
       .expect(404, {
         statusCode: 404,
         message: REVIEW_NOT_FOUND,

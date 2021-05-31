@@ -48,4 +48,8 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
+
+  async deleteUser(email: string) {
+    return this.userModel.find({ email }).deleteOne().exec();
+  }
 }

@@ -2,14 +2,18 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   HttpCode,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { ALREADY_REGISTERED_ERROR } from './auth.constants';
 import { AuthService } from './auth.service';
+import { UserEmail } from '../decorators/user-email.decorator';
+import { JwtAuthGuard } from './guards/jst.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -31,5 +35,11 @@ export class AuthController {
   async login(@Body() { login, password }: AuthDto) {
     const { email } = await this.authService.validateUser(login, password);
     return this.authService.login(email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('deleteUser')
+  async deleteUser(@UserEmail() email: string) {
+    return this.authService.deleteUser(email);
   }
 }
