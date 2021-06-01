@@ -44,19 +44,19 @@ describe('AppController (e2e)', () => {
     token = body.access_token;
   });
 
-  afterEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
-    await request(app.getHttpServer())
-      .delete('/auth/deleteUser')
-      .set('Authorization', `Bearer ${token}`)
-      .send(loginDto);
-  });
+  // afterEach(async () => {
+  //   const moduleFixture: TestingModule = await Test.createTestingModule({
+  //     imports: [AppModule],
+  //   }).compile();
+  //
+  //   app = moduleFixture.createNestApplication();
+  //   await app.init();
+  //
+  //   await request(app.getHttpServer())
+  //     .delete('/auth/deleteUser')
+  //     .set('Authorization', `Bearer ${token}`)
+  //     .send(loginDto);
+  // });
 
   it('/review/create (POST) - success', async (done) => {
     return request(app.getHttpServer())
